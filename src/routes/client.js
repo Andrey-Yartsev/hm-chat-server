@@ -6,7 +6,7 @@ module.exports = [
     {
         method: 'GET',
         path: '/client/messages',
-        handler: controllers.getMessages,
+        handler: controllers.messagesList,
         config: {
             description: 'Получить список сообщений',
             notes: 'Вощзвращает size сообщений после сообщения lastMessageId',
@@ -25,6 +25,7 @@ module.exports = [
         path: '/client/messages',
         handler: controllers.sendMessage,
         config: {
+            description: 'Отправить сообщение',
             validate: {
                 payload: {
                     text: Joi.string()
