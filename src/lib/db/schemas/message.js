@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const objectId = mongoose.Types.ObjectId;
+const objectId = mongoose.Schema.Types.ObjectId;
 const uuid = require('uuid');
 
 module.exports = mongoose.Schema({
@@ -8,18 +8,13 @@ module.exports = mongoose.Schema({
         default: Date.now
     },
 
-    author: {
-        type: objectId,
-        required: true
-    },
+    author: objectId,
 
-    token: {
-        type: String,
-        required: true,
-        default: uuid.v4
-    },
+    client: objectId,
 
-    name: {
+    line: objectId,
+
+    text: {
         type: String,
         required: true
     }

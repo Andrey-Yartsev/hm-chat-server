@@ -1,5 +1,7 @@
 module.exports = {
-    client: require('./index'),
+    client: require('./client'),
     message: require('./message'),
-    operator: require('./operator')
+    operator: require('./operator'),
+    line: require('./line'),
+    profile: require('./profile'),
 };

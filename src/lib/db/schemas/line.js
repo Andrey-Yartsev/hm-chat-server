@@ -8,22 +8,21 @@ module.exports = mongoose.Schema({
         default: Date.now
     },
 
-    login: {
-        type: String,
-        required: true,
-        unique: true
-    },
-
-    password: {
-        type: String,
-        required: true
-    },
-
     token: {
         type: String,
         required: true,
         default: uuid.v4
     },
 
-    profile: objectId
+    client: {
+        type: objectId
+    },
+
+    operators: [{
+        type: objectId
+    }],
+
+    description: {
+        type: String
+    }
 });

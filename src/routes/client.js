@@ -6,7 +6,7 @@ module.exports = [
     {
         method: 'GET',
         path: '/client/messages',
-        handler: controllers.getMessages,
+        handler: controllers.messagesList,
         config: {
             description: 'Получить список сообщений',
             notes: 'Вощзвращает size сообщений после сообщения lastMessageId',
@@ -16,7 +16,8 @@ module.exports = [
                     size: Joi.number(),
                     lastMessageId: Joi.string()
                 }
-            }
+            },
+            auth: 'client'
         }
     },
 
@@ -25,12 +26,27 @@ module.exports = [
         path: '/client/messages',
         handler: controllers.sendMessage,
         config: {
+            description: 'Отправить сообщение',
             validate: {
                 payload: {
-                    text: Joi.string()
+                    text: Joi.string().required()
                 }
             },
-            tags: ['api', 'client']
+            tags: ['api', 'client'],
+            auth: 'client'
         }
-    }
+    },
+
+    {
+        method: 'POST',
+        path: '/client/fill',
+        handler: async function(request, reply) {
+            let client = await request.db.Client.create({
+                name: 'Testclient',
+            })
+            reply(client);
+        },
+    },    
+
+
 ];
