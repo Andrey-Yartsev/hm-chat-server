@@ -16,8 +16,17 @@ module.exports = mongoose.Schema({
 
     line: objectId,
 
-    name: {
-        type: String,
-        required: true
+    profile: {
+        type: objectId,
+        ref: 'Profile'
+    },
+
+    login: {
+        type: String
+    },
+
+    password: {
+        type: String
     }
+
 });

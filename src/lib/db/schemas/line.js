@@ -15,14 +15,20 @@ module.exports = mongoose.Schema({
     },
 
     client: {
-        type: objectId
+        type: objectId,
+        ref: 'Client'
     },
 
     operators: [{
-        type: objectId
+        type: objectId,
+        ref: 'Operator'
     }],
 
     description: {
         type: String
-    }
+    },
+
+    viewedBy: [{
+        type: objectId
+    }]
 });

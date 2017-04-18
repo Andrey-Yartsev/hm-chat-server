@@ -25,5 +25,7 @@ module.exports = mongoose.Schema({
         default: uuid.v4
     },
 
-    profile: objectId
+    invites: [{type: objectId, ref: 'Line'}],
+
+    profile: {type: objectId, ref: 'Profile'}
 });

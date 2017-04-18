@@ -14,9 +14,21 @@ module.exports = async function () {
     // Create a server with a host and port
     const server = new Hapi.Server();
     server.connection({
-        port: 8000
+        port: 8000,
+        routes: {
+            cors: true
+        },
+        labels: ['api']
     });
 
+    server.connection({
+        port: 3000,
+        labels: ['ws']
+    });
+
+
+    let apiServer = server.select('api');
+    let wsServer = server.select('ws');
 
     const swaggerOptions = {
         info: {
@@ -26,22 +38,28 @@ module.exports = async function () {
     };
 
 
-    //Add db support
-    let models = await db(server);
 
-    server.decorate('request', 'db', models);
-    server.decorate('server', 'db', models);
+
+    //Add db support
+    let models = await db(apiServer);
+
+    apiServer.decorate('request', 'db', models);
+    apiServer.decorate('server', 'db', models);
 
 
     //Add auth strategies
-    require('./lib/auth')(server);
+    require('./lib/auth')(apiServer);
 
 
     // Add the routes
-    server.route(clientRoutes);
-    server.route(partnerRoutes);
+    apiServer.route(clientRoutes);
+    apiServer.route(partnerRoutes);
 
-    server.register([
+    let ws = require('./lib/websockets')(wsServer, models);
+    apiServer.decorate('request', 'ws', ws);
+
+
+    apiServer.register([
         Inert,
         Vision,
         {
@@ -57,7 +75,7 @@ module.exports = async function () {
                if (serverErr) {
                     pino.error(serverErr);
                 } else {
-                    pino.info('Server running at:', server.info.uri);
+                    pino.info('Server running at:', apiServer.info.uri);
                 }
             });
         }

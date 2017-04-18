@@ -1,41 +1,69 @@
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const socketIo = require('socket.io');
+const pino = require('pino')();
 
-const userSockets = {};
+const clientSockets = {};
 const operSockets = {};
 
-io.on('connection', function (socket){
-    let token = false;
 
-    socket.on('userConnect', (data) => {
-        token = data.token;
-        userSockets[data.token] = socket;
+module.exports = function (wsServer, db) {
+    const io = socketIo(wsServer.listener);
+
+    io.on('connection', function (socket){
+        let id = false;
+
+        socket.on('clientConnect', async (data) => {
+            pino.info('clientConnect', data);
+
+            let client = await db.Client.findOne({
+                token: data.token
+            });
+
+            if (client) {
+                pino.info('connecting to ', client._id);
+                socket.join(client._id);
+            }
+
+        });
+
+        socket.on('operConnect', async (data) => {
+            pino.info('operConnect', data);
+
+            let oper = await db.Operator.findOne({
+                token: data.token
+            });
+
+            if (oper) {
+                pino.info('connecting to ', oper._id);
+                socket.join(oper._id);
+                socket.join('opers');
+            }
+        });
+
+        socket.on('disconnect', () => {
+            pino.info('User disconnected', id);
+        });
+
+        console.log('a user connected');
     });
 
-    socket.on('operConnect', (data) => {
-        token = data.token;
-        operSockets[data.token] = socket;
-    });
+    return {
+        notifyClient: function (token, type, data) {
+            pino.info('notifying client', token, type);
 
-    socket.on('disconnect', () => {
-        delete userSockets[token];
-        delete operSockets[token];
-    });
+            io.to(token).emit(type, data);
 
-    console.log('a user connected');
-});
+        },
 
-http.listen(3000, function (){
-    console.log('listening on *:3000');
-});
+        notifyOperators: function (tokens, type, data) {
 
-
-module.exports = {
-    notifyUser: function (token, message) {
-
-    },
-
-    notifyOperator: function (token, message) {
-
-    }
-}
+            if (tokens === 'all') {
+                io.to('opers').emit(type, data);
+            } else {
+                tokens.map((token) => {
+                    pino.info('notifying operator', token, type);
+                    io.to(token).emit(type, data);
+                });
+            }
+        }
+    };
+};

@@ -9,8 +9,9 @@ module.exports = [
     {
         method: 'GET',
         path: '/operator/lines',
-        handler: notImplemented,
+        handler: controllers.getLines,
         config: {
+            auth: 'operator',
             description: 'Получить список комнат',
             notes: 'Возвращает список всех комнат',
             tags: ['api', 'operator']
@@ -35,11 +36,24 @@ module.exports = [
 
     {
         method: 'GET',
-        path: '/operator/lines/new',
-        handler: notImplemented,
+        path: '/operator/lines/{id}',
+        handler: controllers.getLineDetails,
         config: {
+            auth: 'operator',
+            description: 'Получить детали комнаты',
+            notes: 'Возвращает детали клиента и подключенных операторов',
+            tags: ['api', 'operator']
+        }
+    },
+
+    {
+        method: 'GET',
+        path: '/operator/lines/new',
+        handler: controllers.getNewLines,
+        config: {
+            auth: 'operator',
             description: 'Получить список не взятых входящих',
-            notes: 'Вощзвращает список не взятых входящих клиентов',
+            notes: 'Возвращает список не взятых входящих клиентов',
             tags: ['api', 'operator']
         }
     },
@@ -47,8 +61,9 @@ module.exports = [
     {
         method: 'POST',
         path: '/operator/lines/{id}/pick',
-        handler: notImplemented,
+        handler: controllers.pickLine,
         config: {
+            auth: 'operator',
             description: 'Подключиться к новому клиенту',
             notes: 'Может вернуть ошибку, если кто-то другой уже подключился',
             tags: ['api', 'operator']
@@ -58,8 +73,9 @@ module.exports = [
     {
         method: 'POST',
         path: '/operator/lines/{id}/drop',
-        handler: notImplemented,
+        handler: controllers.dropLine,
         config: {
+            auth: 'operator',
             description: 'Отключиться от комнаты',
             tags: ['api', 'operator']
         }
@@ -68,8 +84,9 @@ module.exports = [
     {
         method: 'POST',
         path: '/operator/lines/{id}/invite',
-        handler: notImplemented,
+        handler: controllers.invite,
         config: {
+            auth: 'operator',
             description: 'Пригласить оператора в комнату',
             validate: {
                 payload: {
@@ -83,8 +100,9 @@ module.exports = [
     {
         method: 'GET',
         path: '/operator/lines/{id}/messages',
-        handler: notImplemented,
+        handler: controllers.getMessages,
         config: {
+            auth: 'operator',
             description: 'Получить список сообщений',
             notes: 'Вощзвращает size сообщений после сообщения lastMessageId',
             tags: ['api', 'operator'],
@@ -100,8 +118,9 @@ module.exports = [
     {
         method: 'PUT',
         path: '/operator/lines/{id}/messages',
-        handler: notImplemented,
+        handler: controllers.sendMessage,
         config: {
+            auth: 'operator',
             description: 'Отправить сообщение',
             validate: {
                 payload: {
@@ -112,12 +131,37 @@ module.exports = [
         }
     },
 
+    {
+        method: 'GET',
+        path: '/operator/invite',
+        handler: controllers.getInvites,
+        config: {
+            auth: 'operator',
+            description: 'Получить список моих приглашений',
+            tags: ['api', 'operator']
+        }
+    },
+
+
+    {
+        method: 'DELETE',
+        path: '/operator/invite/{lineId}',
+        handler: controllers.declineInvite,
+        config: {
+            auth: 'operator',
+            description: 'Отказаться от приглашения',
+            tags: ['api', 'operator']
+        }
+    },
+
+
 
     {
         method: 'GET',
         path: '/operator/operators',
-        handler: notImplemented,
+        handler: controllers.getOperators,
         config: {
+            auth: 'operator',
             description: 'Получить список операторов',
             notes: 'Чтобы, например, решить, кого приголасить в комнату',
             tags: ['api', 'operator']
@@ -127,6 +171,10 @@ module.exports = [
     {
         method: 'POST',
         path: '/operator/fill',
+        config: {
+            description: 'Создать тестового оператора',
+            tags: ['api', 'operator']
+        },
         handler: async function (request, reply) {
             try {
                 let id = randomInt(0, 2000);

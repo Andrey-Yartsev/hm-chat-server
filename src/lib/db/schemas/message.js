@@ -8,7 +8,10 @@ module.exports = mongoose.Schema({
         default: Date.now
     },
 
-    author: objectId,
+    author: {
+        type: objectId,
+        ref: 'Profile'
+    },
 
     client: objectId,
 
