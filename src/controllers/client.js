@@ -2,9 +2,24 @@ const pino = require('pino')();
 const sha1 = require('sha1');
 const ObjectId = require('mongoose').Types.ObjectId;
 
+
+const updateFcmToken = async (request, reply, fcmToken) => {
+    try {
+        console.log('updating ' + request.auth.credentials.login);
+        await request.auth.credentials.update({
+            fcmToken
+        });
+        reply('Ok ' + request.payload.token);
+    } catch (err) {
+        pino.error(err);
+        reply('Error').code(500);
+    }
+
+}
+
 /*
-    TODO: отрефачить контроллеры
-*/
+ TODO: отрефачить контроллеры
+ */
 
 module.exports = {
     messagesList: async (request, reply) => {
@@ -75,7 +90,7 @@ module.exports = {
             request.ws.notifyOperators(line.operators, 'newMessage', newMessage);
 
             reply({status: 'success', message: newMessage});
-        } catch (err){
+        } catch (err) {
             pino.error(err);
             reply('Error').code(500);
         }
@@ -99,16 +114,40 @@ module.exports = {
                 userId: client._id
             });
 
-        } catch (err){
+        } catch (err) {
             pino.error(err);
             reply('Error').code(500);
+        }
+    },
 
+    updateFcmToken: async (request, reply) => {
+        try {
+            await request.auth.credentials.update({
+                fcmToken: request.payload.token
+            });
+            reply('Ok');
+        } catch (err) {
+            pino.error(err);
+            reply('Error').code(500);
+        }
+    },
+
+    deleteFcmToken: async (request, reply) => {
+        try {
+            await request.auth.credentials.update({
+                fcmToken: ''
+            });
+            reply('Ok');
+        } catch (err) {
+            pino.error(err);
+            reply('Error').code(500);
         }
     }
+
 };
 
 
-async function createLine (db, client) {
+async function createLine(db, client) {
     let line = await db.Line.create({
         client: client._id,
         description: client.name

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "MONGO_HOST=localhost PORT=80 node index.js",
+    "run": "MONGO_HOST=localhost PORT=80 FCM_SERVER_KEY=AAAAn1fnWHM:APA91bH0Sg-MWBD4FmR-KG48z22tbDux-tuqjjmz9eYyFtx6Y8_WN_chhOZHHGJ9V_P6B9EiZNGUaHDUrM1O6RNtc3Rs72l7u4MT-04HyhLCN8L2e_FP4jbSMr8B6CYQO8vK8mYPoy4G node index.js",
     "build": "docker build -t 606ep/chat-server:0.0.1 .",
     "push": "docker push 606ep/chat-server:0.0.1"
   },
@@ -15,6 +15,7 @@
     "babel": "^6.23.0",
     "babel-plugin-transform-async-to-generator": "^6.22.0",
     "babel-register": "^6.24.0",
+    "fcm-push": "^1.1.2",
     "hapi": "^16.1.0",
     "hapi-swagger": "^7.7.0",
     "inert": "^4.1.0",

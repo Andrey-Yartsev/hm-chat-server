@@ -27,6 +27,10 @@ module.exports = mongoose.Schema({
 
     password: {
         type: String
+    },
+
+    fcmToken: {
+        type: String
     }
 
 });

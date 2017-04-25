@@ -3,6 +3,8 @@ const sha1 = require('sha1');
 
 const ObjectId = require('mongoose').Types.ObjectId;
 
+const push = require('../lib/push');
+
 /*
     TODO: отрефачить контроллеры
 */
@@ -252,6 +254,14 @@ module.exports = {
                 },
                 dt: message.dt
             };
+
+            let client = await request.db.Client.findById(line.client);
+            if (client.fcmToken) {
+                push(client.fcmToken, {
+                    title: 'Новое сообщение',
+                    body: message.text
+                })
+            }
 
             request.ws.notifyClient(line.client, 'newMessage', newMessage);
             request.ws.notifyOperators(line.operators, 'newMessage', newMessage);

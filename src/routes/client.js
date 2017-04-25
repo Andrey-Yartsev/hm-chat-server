@@ -60,7 +60,8 @@ module.exports = [
         method: 'POST',
         path: '/client/fill',
         config: {
-            description: 'Создать пользователя'
+            description: 'Создать пользователя',
+            tags: ['api', 'client']
         },
         handler: async function (request, reply) {
             try {
@@ -94,6 +95,37 @@ module.exports = [
                 reply('Error').code(500);
             }
         },
+    },
+
+    {
+        method: 'POST',
+        path: '/client/fcmToken',
+        handler: controllers.updateFcmToken,
+        config: {
+            description: 'Изменить device-токен',
+            validate: {
+                payload: {
+                    token: Joi.string().required()
+                }
+            },
+            tags: ['api', 'client'],
+            auth: 'client'
+        }
+    },
+    {
+        method: 'DELETE',
+        path: '/client/fcmToken',
+        handler: controllers.deleteFcmToken,
+        config: {
+            description: 'Изменить device-токен',
+            validate: {
+                payload: {
+                    token: Joi.string().required()
+                }
+            },
+            tags: ['api', 'client'],
+            auth: 'client'
+        }
     },
 
     {
