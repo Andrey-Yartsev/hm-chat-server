@@ -60,7 +60,7 @@ module.exports = [
         method: 'POST',
         path: '/client/fill',
         config: {
-            description: 'Создать пользователя',
+            description: 'Создать тестового пользователя',
             tags: ['api', 'client']
         },
         handler: async function (request, reply) {
@@ -87,6 +87,51 @@ module.exports = [
                 reply({
                     login: client.login,
                     password: 'pass' + id,
+                    token: client.token
+                });
+
+            } catch (err) {
+                pino.error(err);
+                reply('Error').code(500);
+            }
+        },
+    },
+
+    {
+        method: 'POST',
+        path: '/client/create',
+        config: {
+            description: 'Создать пользователя',
+            validate: {
+                payload: {
+                    login: Joi.string().required(),
+                    password: Joi.string().required(),
+                }
+            },
+            tags: ['api', 'client']
+        },
+
+        handler: async function (request, reply) {
+            try {
+                let profile = await request.db.Profile.create({
+                    name: request.payload.login
+                });
+
+                let line = await request.db.Line.create({
+                    description: profile.name
+                });
+
+                let client = await request.db.Client.create({
+                    login: request.payload.login,
+                    password: sha1(request.payload.password +  process.env.PASSWORD_SALT),
+                    profile: profile._id,
+                    line: line._id
+                });
+
+                line.client = client._id;
+                await line.save();
+
+                reply({
                     token: client.token
                 });
 

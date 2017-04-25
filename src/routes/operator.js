@@ -199,7 +199,41 @@ module.exports = [
                 reply('Error').code(500);
             }
         }
+    },
+
+    {
+        method: 'POST',
+        path: '/operator/create',
+        config: {
+            description: 'Создать оператора',
+            validate: {
+                payload: {
+                    login: Joi.string().required(),
+                    password: Joi.string().required(),
+                }
+            },
+            tags: ['api', 'operator']
+        },
+        handler: async function (request, reply) {
+            try {
+                let profile = await request.db.Profile.create({
+                    name: request.payload.login
+                });
+                let operator = await request.db.Operator.create({
+                    login: request.payload.login,
+                    password: sha1(request.payload.password +  process.env.PASSWORD_SALT),
+                    profile: profile._id
+                });
+                reply({
+                    token: operator.token
+                });
+            } catch (err) {
+                pino.error(err);
+                reply('Error').code(500);
+            }
+        }
     }
+
 ];
 
 
