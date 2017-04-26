@@ -87,7 +87,7 @@ module.exports = {
             let line = await request.db.Line.findOne({_id: new ObjectId(lineId)});
 
             request.ws.notifyClient(line.client, 'newMessage', newMessage);
-            request.ws.notifyOperators(line.operators, 'newMessage', newMessage);
+            request.ws.notifyOperators('all', 'newMessage', newMessage);
 
             reply({status: 'success', message: newMessage});
         } catch (err) {
