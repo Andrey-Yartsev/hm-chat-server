@@ -36,7 +36,7 @@ const getLines = async (request, reply, operators) => {
             {$match: {
                 'line': {$in: lineIds}
             }},
-            {$sort: {dt: -1}},
+            {$sort: {dt: 1}},
             {
                 $group: {
                     _id: '$line',
