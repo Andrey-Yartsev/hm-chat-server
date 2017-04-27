@@ -86,6 +86,10 @@ module.exports = {
 
             let line = await request.db.Line.findOne({_id: new ObjectId(lineId)});
 
+            //обновляем список просмотревших
+            line.viewedBy = [client._id];
+            await line.save();
+
             request.ws.notifyClient(line.client, 'newMessage', newMessage);
             request.ws.notifyOperators('all', 'newMessage', newMessage);
 

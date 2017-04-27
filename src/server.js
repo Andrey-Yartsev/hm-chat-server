@@ -38,14 +38,11 @@ module.exports = async function () {
     };
 
 
-
-
     //Add db support
     let models = await db(apiServer);
 
     apiServer.decorate('request', 'db', models);
     apiServer.decorate('server', 'db', models);
-
 
     //Add auth strategies
     require('./lib/auth')(apiServer);
@@ -60,19 +57,19 @@ module.exports = async function () {
 
 
     apiServer.register([
-        Inert,
-        Vision,
-        {
-            'register': HapiSwagger,
-            'options': swaggerOptions
-        }],
+            Inert,
+            Vision,
+            {
+                'register': HapiSwagger,
+                'options': swaggerOptions
+            }],
         (err) => {
             if (err) {
                 pino.error('Error', err);
             }
 
             server.start((serverErr) => {
-               if (serverErr) {
+                if (serverErr) {
                     pino.error(serverErr);
                 } else {
                     pino.info('Server running at:', apiServer.info.uri);

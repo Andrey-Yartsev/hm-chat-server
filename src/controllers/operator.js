@@ -9,6 +9,62 @@ const push = require('../lib/push');
     TODO: отрефачить контроллеры
 */
 
+const getLines = async (request, reply, operators) => {
+    try {
+        let operator = request.auth.credentials;
+
+        let lines = await request.db.Line.find({
+            operators: operators
+        }).select({
+            description: true,
+            viewedBy: true
+        });
+
+        lines = lines.map((line) => {
+            return {
+                _id: line._id,
+                description: line.description,
+                unread: line.viewedBy.indexOf(operator._id) === -1
+            };
+        });
+
+        // add last messages to lines
+        const lineIds = lines.map(function(line) {
+            return line._id;
+        });
+        const _lastMessages = await request.db.Message.aggregate([
+            {$match: {
+                'line': {$in: lineIds}
+            }},
+            {$sort: {dt: -1}},
+            {
+                $group: {
+                    _id: '$line',
+                    dt: {$first: "$dt"},
+                    line: {$first: "$line"},
+                    text: {$first: "$text"}
+                }
+            }
+        ]);
+        const lastMessages = {};
+        for (let v of _lastMessages) {
+            lastMessages[v.line] = v;
+            delete lastMessages[v.line].line;
+        }
+        for (let line of lines) {
+            if (lastMessages[line._id]) {
+                line.lastMessage = lastMessages[line._id];
+            }
+        }
+        // added
+
+        reply(lines);
+    } catch (err) {
+        pino.error(err);
+        reply('Error').code(500);
+    }
+};
+
 module.exports = {
     authorize: async function (request, reply) {
         let login = request.payload.login;
@@ -29,48 +85,13 @@ module.exports = {
         });
     },
 
-
     getLines: async function (request, reply) {
-        try {
-            let operator = request.auth.credentials;
-
-            let lines = await request.db.Line.find({
-                operators: operator._id
-            }).select({
-                description: true,
-                viewedBy: true
-            });
-
-            let retlines = lines.map((line) => {
-                return {
-                    _id: line._id,
-                    description: line.description,
-                    unread: line.viewedBy.indexOf(operator._id) === -1
-                };
-            });
-
-            reply(retlines);
-        } catch (err) {
-            pino.error(err);
-            reply('Error').code(500);
-        }
+        let operator = request.auth.credentials;
+        getLines(request, reply, operator._id);
     },
 
     getNewLines: async function (request, reply) {
-        try {
-            let lines = await request.db.Line.find({
-                operators: {
-                    $size: 0
-                }
-            }).select({
-                description: true
-            });
-
-            reply(lines);
-        } catch (err) {
-            pino.error(err);
-            reply('Error').code(500);
-        }
+        getLines(request, reply, {$size: 0});
     },
 
     getLineDetails: async function (request, reply) {
@@ -193,6 +214,8 @@ module.exports = {
                 return;
             }
 
+            pino.info('getMessages');
+
             //Устанавливаем флаг "прочитано", если его не было
             if (line.viewedBy.indexOf(operator._id) === -1) {
                 pino.info('Эта линия еще не прочитана, ставим флаг', line._id, operator._id);
@@ -240,6 +263,7 @@ module.exports = {
 
             //обновляем список просмотревших
             line.viewedBy = [operator._id];
+            await line.save();
 
             let profile = await request.db.Profile.findById(operator.profile);
 
