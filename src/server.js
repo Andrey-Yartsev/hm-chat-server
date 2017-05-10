@@ -7,6 +7,7 @@ const HapiSwagger = require('hapi-swagger');
 
 const clientRoutes = require('./routes/client');
 const partnerRoutes = require('./routes/operator');
+const testRoutes = require('./routes/test');
 const db = require('./lib/db');
 const pino = require('pino')();
 
@@ -51,6 +52,7 @@ module.exports = async function () {
     // Add the routes
     apiServer.route(clientRoutes);
     apiServer.route(partnerRoutes);
+    apiServer.route(testRoutes);
 
     let ws = require('./lib/websockets')(wsServer, models);
     apiServer.decorate('request', 'ws', ws);

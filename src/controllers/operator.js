@@ -5,17 +5,11 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 const push = require('../lib/push');
 
-/*
-    TODO: отрефачить контроллеры
-*/
-
-const getLines = async (request, reply, operators) => {
+const getLines = async (request, reply, lineFiler) => {
     try {
         let operator = request.auth.credentials;
 
-        let lines = await request.db.Line.find({
-            operators: operators
-        }).select({
+        let lines = await request.db.Line.find(lineFiler).select({
             description: true,
             viewedBy: true
         });
@@ -29,14 +23,16 @@ const getLines = async (request, reply, operators) => {
         });
 
         // add last messages to lines
-        const lineIds = lines.map(function(line) {
+        const lineIds = lines.map(function (line) {
             return line._id;
         });
         const _lastMessages = await request.db.Message.aggregate([
-            {$match: {
-                'line': {$in: lineIds}
-            }},
-            {$sort: {dt: 1}},
+            {
+                $match: {
+                    'line': {$in: lineIds}
+                }
+            },
+            {$sort: {dt: -1}},
             {
                 $group: {
                     _id: '$line',
@@ -73,6 +69,9 @@ module.exports = {
             login: login,
             password: sha1(password + process.env.PASSWORD_SALT)
         });
+        let profile = await request.db.Profile.findOne({
+            _id: operator.profile,
+        });
 
         if (!operator) {
             reply('Not found').code(404);
@@ -81,17 +80,25 @@ module.exports = {
 
         reply({
             token: operator.token,
-            id: operator.id
+            id: operator.id,
+            profileId: profile._id
         });
     },
 
     getLines: async function (request, reply) {
         let operator = request.auth.credentials;
-        getLines(request, reply, operator._id);
+        getLines(request, reply, {
+            operators: operator._id
+        });
     },
 
     getNewLines: async function (request, reply) {
-        getLines(request, reply, {$size: 0});
+        getLines(request, reply, {
+            unread: true,
+            operators: {
+                $size: 0
+            }
+        });
     },
 
     getLineDetails: async function (request, reply) {
@@ -208,7 +215,7 @@ module.exports = {
             //Получаем данные о линии
             let line = await request.db.Line.findById(lineId);
 
-            if (!line || line.operators.indexOf(operator._id) === -1) {
+            if (!line/* || line.operators.indexOf(operator._id) === -1*/) {
                 //если оператора нет в списке, то ему не показываем
                 reply('Incorrect line id').code(400);
                 return;
@@ -259,10 +266,18 @@ module.exports = {
                 author: operator.profile
             });
 
+            let r = await request.db.Message.updateMany({
+                line: lineId,
+                viewed: false
+            }, {
+                viewed: true
+            });
+
             let line = await request.db.Line.findById(lineId);
 
-            //обновляем список просмотревших
+            // обновляем список просмотревших
             line.viewedBy = [operator._id];
+            line.unread = false;
             await line.save();
 
             let profile = await request.db.Profile.findById(operator.profile);
@@ -291,7 +306,7 @@ module.exports = {
             request.ws.notifyOperators(line.operators, 'newMessage', newMessage);
 
             reply({status: 'success', message: newMessage});
-        } catch (err){
+        } catch (err) {
             pino.error(err);
             reply('Error').code(500);
         }
@@ -335,7 +350,7 @@ module.exports = {
         }
     },
 
-    declineInvite: async function(request, reply) {
+    declineInvite: async function (request, reply) {
         try {
             let operator = request.auth.credentials;
 

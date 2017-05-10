@@ -15,11 +15,51 @@ const updateFcmToken = async (request, reply, fcmToken) => {
         reply('Error').code(500);
     }
 
-}
+};
 
-/*
- TODO: отрефачить контроллеры
- */
+
+const sendMessage = async (request, reply) => {
+    try {
+        let client = request.auth.credentials;
+        let lineId = client.line;
+        if (!lineId) {
+            throw new Error('no line for client');
+        }
+        pino.info('Payload', request.payload);
+        console.log(request.payload);
+        let message = await request.db.Message.create({
+            line: lineId,
+            text: request.payload.text,
+            author: client.profile
+        });
+        let profile = await request.db.Profile.findById(client.profile);
+        let newMessage = {
+            text: message.text,
+            _id: message._id,
+            line: message.line,
+            author: {
+                name: profile.name,
+                _id: profile._id,
+                avatar: profile.avatar
+            },
+            dt: message.dt
+        };
+        let line = await request.db.Line.findOne({_id: new ObjectId(lineId)});
+        // обновляем список просмотревших
+        line.viewedBy = [client._id];
+        if (line.unread === false) {
+            line.unread = true;
+            await line.save();
+            request.ws.notifyOperators('all', 'linesChanged');
+        }
+        request.ws.notifyClient(line.client, 'newMessage', newMessage);
+        request.ws.notifyOperators('all', 'newMessage', newMessage);
+        reply({status: 'success', message: newMessage});
+    } catch (err) {
+        pino.error(err);
+        reply('Error').code(500);
+    }
+};
 
 module.exports = {
     messagesList: async (request, reply) => {
@@ -54,50 +94,21 @@ module.exports = {
         }
     },
 
-    sendMessage: async (request, reply) => {
-        try {
-            let client = request.auth.credentials;
-            let lineId = client.line;
-            if (!lineId) {
-                throw new Error('no line for client');
-            }
-
-            pino.info('Payload', request.payload);
-
-            let message = await request.db.Message.create({
-                line: lineId,
-                text: request.payload.text,
-                author: client.profile
-            });
-
-            let profile = await request.db.Profile.findById(client.profile);
-
-            let newMessage = {
-                text: message.text,
-                _id: message._id,
-                line: message.line,
-                author: {
-                    name: profile.name,
-                    _id: profile._id,
-                    avatar: profile.avatar
-                },
-                dt: message.dt
-            };
-
-            let line = await request.db.Line.findOne({_id: new ObjectId(lineId)});
-
-            //обновляем список просмотревших
-            line.viewedBy = [client._id];
-            await line.save();
-
-            request.ws.notifyClient(line.client, 'newMessage', newMessage);
-            request.ws.notifyOperators('all', 'newMessage', newMessage);
-
-            reply({status: 'success', message: newMessage});
-        } catch (err) {
-            pino.error(err);
-            reply('Error').code(500);
+    testSendMessage: async (request, reply) => {
+        const client = await request.db.Client.findOne({
+            login: request.payload.login
+        });
+        if (!client) {
+            reply('User not found');
+            return;
         }
+        request.auth.credentials = client;
+        sendMessage(request, reply);
+    },
+
+    sendMessage: async (request, reply) => {
+        console.log(request.auth);
+        sendMessage(request, reply);
     },
 
     authorize: async (request, reply) => {

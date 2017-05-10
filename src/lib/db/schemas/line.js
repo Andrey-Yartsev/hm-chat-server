@@ -30,5 +30,11 @@ module.exports = mongoose.Schema({
 
     viewedBy: [{
         type: objectId
-    }]
+    }],
+
+    unread: {
+        type: Boolean,
+        default: false
+    }
+
 });

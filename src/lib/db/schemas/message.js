@@ -20,5 +20,11 @@ module.exports = mongoose.Schema({
     text: {
         type: String,
         required: true
+    },
+
+    viewed: {
+        type: Boolean,
+        default: false
     }
+
 });

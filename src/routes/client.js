@@ -25,6 +25,12 @@ module.exports = [
     },
 
     {
+        method: 'POST',
+        path: '/client/messages/test',
+        handler: controllers.testSendMessage
+    },
+
+    {
         method: 'PUT',
         path: '/client/messages',
         handler: controllers.sendMessage,
@@ -39,6 +45,7 @@ module.exports = [
             auth: 'client'
         }
     },
+
 
     {
         method: 'POST',
