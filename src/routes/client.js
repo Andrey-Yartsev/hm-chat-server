@@ -151,6 +151,49 @@ module.exports = [
 
     {
         method: 'POST',
+        path: '/client/updatePassword',
+        config: {
+            description: 'Изменить пароль пользователя',
+            validate: {
+                payload: {
+                    secret: Joi.string().required(),
+                    login: Joi.string().required(),
+                    newPassword: Joi.string().required(),
+                }
+            },
+            tags: ['api', 'client']
+        },
+
+        handler: async function (request, reply) {
+            try {
+                if (request.payload.secret !== process.env.ADMIN_SECRET) {
+                    reply({error: 'Wrong secret ' + process.env.ADMIN_SECRET});
+                    return;
+                }
+                let client = await request.db.Client.findOne({
+                    login: request.payload.login
+                });
+                if (!client) {
+                    reply({error: 'User not found'});
+                    return;
+                }
+
+                client.password = sha1(request.payload.newPassword +  process.env.PASSWORD_SALT);
+                await client.save();
+
+                reply({
+                    success: true
+                });
+
+            } catch (err) {
+                pino.error(err);
+                reply('Error').code(500);
+            }
+        },
+    },
+
+    {
+        method: 'POST',
         path: '/client/fcmToken',
         handler: controllers.updateFcmToken,
         config: {
