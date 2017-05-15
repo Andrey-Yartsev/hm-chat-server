@@ -167,14 +167,14 @@ module.exports = [
         handler: async function (request, reply) {
             try {
                 if (request.payload.secret !== process.env.ADMIN_SECRET) {
-                    reply({error: 'Wrong secret ' + process.env.ADMIN_SECRET});
+                    reply({error: 'Wrong secret'}).code(400);
                     return;
                 }
                 let client = await request.db.Client.findOne({
                     login: request.payload.login
                 });
                 if (!client) {
-                    reply({error: 'User not found'});
+                    reply({error: 'User not found'}).code(400);
                     return;
                 }
 

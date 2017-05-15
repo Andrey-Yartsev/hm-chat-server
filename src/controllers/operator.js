@@ -69,15 +69,13 @@ module.exports = {
             login: login,
             password: sha1(password + process.env.PASSWORD_SALT)
         });
-        let profile = await request.db.Profile.findOne({
-            _id: operator.profile,
-        });
-
         if (!operator) {
             reply('Not found').code(404);
             return;
         }
-
+        let profile = await request.db.Profile.findOne({
+            _id: operator.profile,
+        });
         reply({
             token: operator.token,
             id: operator.id,
@@ -230,7 +228,7 @@ module.exports = {
                 await line.save();
             }
 
-            let size = request.query.size ? request.query.size : 10;
+            //let size = request.query.size ? request.query.size : 10;
 
             let filter = {
                 line: lineId
@@ -244,9 +242,9 @@ module.exports = {
 
             let messages = await request.db.Message
                 .find(filter)
-                .limit(size)
                 .populate('author')
-                .sort({_id: -1});
+                .sort({dt: 1})
+                /*.limit(size)*/;
 
             reply(messages);
         } catch (err) {
