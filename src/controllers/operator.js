@@ -295,7 +295,7 @@ module.exports = {
             let client = await request.db.Client.findById(line.client);
             if (client.fcmToken) {
                 push(client.fcmToken, {
-                    title: 'Новое сообщение',
+                    title: 'Новое сообщение от ' + message.author.name,
                     body: message.text
                 })
             }
