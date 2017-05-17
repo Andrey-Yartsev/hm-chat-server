@@ -38,6 +38,28 @@ module.exports = async function () {
         }
     };
 
+    console.log(`tcp://${process.env.LOGSTASH_HOST}:${process.env.LOGSTASH_PORT} === ` + process.env.TYPE_LOG);
+    const goodOptions = {
+        includes: {
+            request: ['headers'],
+            response: ['payload'],
+        },
+        reporters: {
+            logstash: [{
+                module: 'good-squeeze',
+                name: 'Squeeze',
+                args: [{
+                    response: ['api'],
+                }],
+            }, {
+                module: 'good-logstash',
+                args: [
+                    `tcp://${process.env.LOGSTASH_HOST}:${process.env.LOGSTASH_PORT}`,
+                    {typeLog: process.env.TYPE_LOG},
+                ],
+            }],
+        }
+    };
 
     //Add db support
     let models = await db(apiServer);
@@ -61,8 +83,11 @@ module.exports = async function () {
             Inert,
             Vision,
             {
-                'register': HapiSwagger,
-                'options': swaggerOptions
+                register: HapiSwagger,
+                options: swaggerOptions
+            }, {
+                register: require('good'),
+                options: goodOptions
             }],
         (err) => {
             if (err) {
