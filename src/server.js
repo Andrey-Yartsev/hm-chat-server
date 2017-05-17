@@ -9,7 +9,7 @@ const clientRoutes = require('./routes/client');
 const partnerRoutes = require('./routes/operator');
 const testRoutes = require('./routes/test');
 const db = require('./lib/db');
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 
 module.exports = async function () {
     // Create a server with a host and port
@@ -56,7 +56,6 @@ module.exports = async function () {
 
     let ws = require('./lib/websockets')(wsServer, models);
     apiServer.decorate('request', 'ws', ws);
-
 
     apiServer.register([
             Inert,

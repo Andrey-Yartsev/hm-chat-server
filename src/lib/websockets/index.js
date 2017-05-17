@@ -1,5 +1,5 @@
 const socketIo = require('socket.io');
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 
 const clientSockets = {};
 const operSockets = {};

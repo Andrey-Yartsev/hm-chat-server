@@ -1,4 +1,4 @@
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 const sha1 = require('sha1');
 const ObjectId = require('mongoose').Types.ObjectId;
 

@@ -3,7 +3,7 @@ const notImplemented = require('../lib/routeNotImplemented');
 const controllers = require('../controllers/client');
 
 const sha1 = require('sha1');
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 
 module.exports = [
     {

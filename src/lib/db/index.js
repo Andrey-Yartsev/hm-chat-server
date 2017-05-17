@@ -1,5 +1,5 @@
 'use strict';
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 
 const mongoose = require('mongoose');
 mongoose.Promise = Promise;
