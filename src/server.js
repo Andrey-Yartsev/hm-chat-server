@@ -9,9 +9,11 @@ const clientRoutes = require('./routes/client');
 const partnerRoutes = require('./routes/operator');
 const testRoutes = require('./routes/test');
 const db = require('./lib/db');
-const pino = require('logstash-pino-replace')();
+const pino = require('logstash-pino-replace')({stdout: true});
+const pckg = require('../package.json');
 
 module.exports = async function () {
+
     // Create a server with a host and port
     const server = new Hapi.Server();
     server.connection({
@@ -33,24 +35,29 @@ module.exports = async function () {
 
     const swaggerOptions = {
         info: {
-            'title': 'HelpMe чат сервер',
-            'version': '0.0.1'
+            'title': pckg.name,
+            'version': pckg.version
         }
     };
 
-    console.log(`tcp://${process.env.LOGSTASH_HOST}:${process.env.LOGSTASH_PORT} === ` + process.env.TYPE_LOG);
     const goodOptions = {
         includes: {
-            request: ['headers'],
-            response: ['payload'],
+            request: ['headers', 'payload'],
+            response: [],
         },
         reporters: {
+            myConsoleReporter: [{
+                module: 'good-squeeze',
+                name: 'Squeeze',
+                args: [{log: '*', response: 'api'}]
+            }, {
+                module: 'good-console'
+            }, 'stdout'],
+            //
             logstash: [{
                 module: 'good-squeeze',
                 name: 'Squeeze',
-                args: [{
-                    response: ['api'],
-                }],
+                args: [{log: '*', response: 'api'}]
             }, {
                 module: 'good-logstash',
                 args: [
@@ -70,14 +77,22 @@ module.exports = async function () {
     //Add auth strategies
     require('./lib/auth')(apiServer);
 
-
     // Add the routes
+    apiServer.route({
+        method: 'GET',
+        path: '/',
+        handler: (request, reply) => {
+            reply('<h1>' + pckg.name + ' ' + pckg.version + '</h1>');
+        }
+    });
     apiServer.route(clientRoutes);
     apiServer.route(partnerRoutes);
     apiServer.route(testRoutes);
 
     let ws = require('./lib/websockets')(wsServer, models);
     apiServer.decorate('request', 'ws', ws);
+
+
 
     apiServer.register([
             Inert,
@@ -98,9 +113,9 @@ module.exports = async function () {
                 if (serverErr) {
                     pino.error(serverErr);
                 } else {
-                    pino.info('Server running at:', apiServer.info.uri);
+                    console.log('Server running at: ' + apiServer.info.uri);
                 }
             });
         }
     );
-}
+};

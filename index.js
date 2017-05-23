@@ -1,10 +1,9 @@
-const pino = require('pino')();
+const pino = require('logstash-pino-replace')();
 
 process.on('unhandledRejection', (reason, p) => {
-    pino.error(reason);
-    pino.error(p);
+    console.error(reason);
+    console.error(p);
 });
-
 
 require('babel-register');
 require('./src/server.js')();
