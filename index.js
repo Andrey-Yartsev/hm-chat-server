@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const pino = require('logstash-pino-replace')();
 
 process.on('unhandledRejection', (reason, p) => {
