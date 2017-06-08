@@ -26,7 +26,7 @@ const sendMessage = async (request, reply) => {
             throw new Error('no line for client');
         }
         pino.info('Payload', request.payload);
-        console.log(request.payload);
+
         let message = await request.db.Message.create({
             line: lineId,
             text: request.payload.text,
@@ -107,7 +107,6 @@ module.exports = {
     },
 
     sendMessage: async (request, reply) => {
-        console.log(request.auth);
         sendMessage(request, reply);
     },
 
