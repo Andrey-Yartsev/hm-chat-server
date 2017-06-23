@@ -85,7 +85,7 @@ module.exports = {
                 .find(filter)
                 .limit(size)
                 .populate('author')
-                .sort({_id: -1});
+                .sort({dt: -1});
 
             reply(messages);
         } catch (err) {
@@ -112,10 +112,17 @@ module.exports = {
 
     authorize: async (request, reply) => {
         try {
+
+            console.log([
+              request.payload.login,
+              sha1(request.payload.password + process.env.PASSWORD_SALT)
+            ]);
+
             let client = await request.db.Client.findOne({
                 login: request.payload.login,
-                password: sha1(request.payload.password + process.env.PASSWORD_SALT)
+                //password: sha1(request.payload.password + process.env.PASSWORD_SALT)
             });
+            console.log(client);
 
             if (!client) {
                 reply('Client not found').code(404);

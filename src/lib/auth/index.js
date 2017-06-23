@@ -1,7 +1,8 @@
 'use strict';
 module.exports = function (server) {
-    server.auth.scheme('bearer-token-evotor', require('./schema'));
+  server.auth.scheme('bearer-token-evotor', require('./schema'));
 
-    require('./strategies/client')(server);
-    require('./strategies/operator')(server);
+  require('./strategies/client')(server);
+  require('./strategies/operator')(server);
+  require('./strategies/master')(server);
 };

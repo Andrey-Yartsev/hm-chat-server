@@ -1,6 +1,5 @@
 const Joi = require('joi');
 const notImplemented = require('../lib/routeNotImplemented');
-const sha1 = require('sha1');
 const controllers = require('../controllers/operator');
 
 const pino = require('logstash-pino-replace')();
@@ -184,7 +183,7 @@ module.exports = [
 
                 let operator = await request.db.Operator.create({
                     login: 'login' + id,
-                    password: sha1('pass' + id +  process.env.PASSWORD_SALT),
+                    password: 'pass' + id,
                     profile: profile._id
                 });
 
@@ -221,7 +220,7 @@ module.exports = [
                 });
                 let operator = await request.db.Operator.create({
                     login: request.payload.login,
-                    password: sha1(request.payload.password +  process.env.PASSWORD_SALT),
+                    password: request.payload.password,
                     profile: profile._id
                 });
                 reply({
