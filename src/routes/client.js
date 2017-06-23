@@ -65,6 +65,21 @@ module.exports = [
   },
 
   {
+    method: 'POST',
+    path: '/client/authorize/token',
+    handler: controllers.authorizeToken,
+    config: {
+      description: 'Авторизация по токену',
+      validate: {
+        payload: {
+          token: Joi.string().required(),
+        }
+      },
+      tags: ['api', 'client'],
+    }
+  },
+
+  {
     method: 'GET',
     path: '/client/lines/{id}',
     handler: operControllers.getLineDetails,
