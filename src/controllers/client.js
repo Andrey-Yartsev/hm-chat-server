@@ -65,6 +65,7 @@ const sendMessage = async (request, reply) => {
 const authorizeResult = (reply, client) => {
   reply({
     token: client.token,
+    cloudToken: client.cloudToken,
     login: client.login,
     profileId: client.profile,
     userId: client._id
