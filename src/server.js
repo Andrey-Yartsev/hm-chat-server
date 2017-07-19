@@ -21,7 +21,7 @@ const debugRoutes = function (routes) {
 module.exports = async function () {
 
   // Create a server with a host and port
-  const server = new Hapi.Server();
+  const server = new Hapi.Server({ debug: { request: ['error'] } });
   server.connection({
     port: 8000,
     routes: {
@@ -91,10 +91,9 @@ module.exports = async function () {
       reply('<h1>' + pckg.name + ' ' + pckg.version + '</h1>');
     }
   });
-  apiServer.route(require('./routes/client'));
-  apiServer.route(require('./routes/operator'));
-  apiServer.route(require('./routes/master'));
-  apiServer.route(require('./routes/test'));
+  apiServer.route(debugRoutes(require('./routes/client')));
+  apiServer.route(debugRoutes(require('./routes/operator')));
+  apiServer.route(debugRoutes(require('./routes/master')));
   apiServer.route(debugRoutes(require('./crudRoutes/operator')));
   // apiServer.route(require('./crudRoutes/operator'));
 
@@ -115,7 +114,8 @@ module.exports = async function () {
       {
         register: HapiSwagger,
         options: swaggerOptions
-      }, {
+      },
+      {
         register: require('good'),
         options: goodOptions
       }

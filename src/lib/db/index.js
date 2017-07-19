@@ -15,7 +15,9 @@ const normalizedPath = require('path').join(__dirname, 'schemas');
 
 db.on('error', pino.error.bind(pino, 'connection error:'));
 
-mongoose.connect(`mongodb://${process.env.MONGO_HOST}/chat-server`);
+mongoose.connect(`mongodb://${process.env.MONGO_HOST}/chat-server`, {
+  useMongoClient: true
+});
 
 module.exports = function () {
   return new Promise((resolve, reject) => {

@@ -7,7 +7,6 @@ module.exports = mongoose.Schema({
         type: String,
         required: true
     },
-
     avatar: {
         type: String
     }

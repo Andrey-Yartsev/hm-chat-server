@@ -76,6 +76,10 @@ module.exports = {
         let profile = await request.db.Profile.findOne({
             _id: operator.profile,
         });
+        if (!profile) {
+          reply('Profile not found').code(404);
+          return;
+        }
         reply({
             token: operator.token,
             id: operator.id,

@@ -202,7 +202,7 @@ module.exports = [
 
     {
         method: 'POST',
-        path: '/operator/create',
+        path: '/api/v1/operator/create',
         config: {
             description: 'Создать оператора',
             validate: {
